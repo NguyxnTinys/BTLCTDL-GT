@@ -1,0 +1,8 @@
+ID,Name,Quantity,Price,Category,Location
+M001,Paracetamol,5000,10000,Fever,Pharmacy A
+M002,Amoxicillin,12000,100000,Antibiotic,Pharmacy B
+M003,Ibuprofen,8000,2000,Pain Relief,Pharmacy C
+M004,Cetrizine,4000,3000,Allergy,Pharmacy A
+M005,Omeprazole,15000,4,Acidity,Pharmacy D
+M006,Boganic,10000,6,Bo,Pharmacy E
+M007,Hu,10,10000,Bo,Pharmacy D
