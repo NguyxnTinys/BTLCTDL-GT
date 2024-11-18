@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-class Medicine{
+class Medicine {
 private:
     string id;
     string name;
@@ -21,6 +21,7 @@ public:
 
     string getId() const;
     string getName() const;
+    int getQuantity() const;
     int getPrice() const;
     string getCategory() const;
     string getLocation() const;
@@ -39,6 +40,10 @@ string Medicine::getId() const {
 
 string  Medicine::getName() const {
     return name;
+}
+
+int Medicine::getQuantity() const{
+    return quantity;
 }
 
 int  Medicine::getPrice() const {
@@ -95,6 +100,9 @@ class MedicineList{
 private:
     list<Medicine>  ls;
 public:
+    void saveToCSV(const string& filename) const;
+    void loadFromCSV(const string& filename);
+
     void add(const Medicine &m);
     void deleteById(const string id);
     void fixPrice(const string id, int  newPrice);
@@ -111,6 +119,64 @@ public:
     vector<Medicine> findByName(const string name) const;
     bool findById(const string id) const;
 };
+
+void MedicineList::saveToCSV(const string& filename) const {
+    ofstream outFile(filename);
+
+    if (!outFile.is_open()) {
+        cout << "Error: Unable to open file for writing.\n";
+        return;
+    }
+
+    // Lưu tiêu đề cột
+    outFile << "ID,Name,Quantity,Price,Category,Location\n";
+
+    // Lưu dữ liệu thuốc vào file
+    for (const auto& medicine : ls) {
+        outFile << medicine.getId() << ","
+                << medicine.getName() << ","
+                << medicine.getQuantity() << ","
+                << medicine.getPrice() << ","
+                << medicine.getCategory() << ","
+                << medicine.getLocation() << "\n";
+    }
+
+    outFile.close();
+    cout << "Data saved successfully to " << filename << ".\n";
+}
+
+void MedicineList::loadFromCSV(const string& filename) {
+    ifstream inFile(filename);
+
+    if (!inFile.is_open()) {
+        cout << "Error: Unable to open file for reading.\n";
+        return;
+    }
+
+    string line;
+    getline(inFile, line); // Bỏ qua dòng tiêu đề
+
+    while (getline(inFile, line)) {
+        stringstream ss(line);
+        string id, name, category, location;
+        int quantity, price;
+
+        getline(ss, id, ',');
+        getline(ss, name, ',');
+        ss >> quantity;
+        ss.ignore();
+        ss >> price;
+        ss.ignore(); 
+        getline(ss, category, ',');
+        getline(ss, location, ',');
+
+        Medicine medicine(id, name, quantity, price, category, location);
+        ls.push_back(medicine);
+    }
+
+    inFile.close();
+    cout << "Data loaded successfully from " << filename << ".\n";
+}
 
 void MedicineList::add(const  Medicine &m) {
     ls.push_back(m);
@@ -452,14 +518,16 @@ private:
                 case 2: {
                     string name;
                     cout << "Enter Name: ";
-                    cin >> name;
+                    cin.ignore();
+                    getline(cin, name);
                     vector<Medicine> foundMedicines = medicineList.findByName(name);
                     if (!foundMedicines.empty()) {
-                        for (const auto& medicine : foundMedicines) {
+                        cout << "Medicines with name \"" << name << "\":\n";
+                        for (auto medicine : foundMedicines) {
                             cout << medicine << endl;
                         }
                     } else {
-                        cout << "No medicines found with the name " << name << ".\n";
+                        cout << "No medicines found with name \"" << name << "\".\n";
                     }
                     break;
                 }
@@ -470,13 +538,14 @@ private:
                     cin >> minPrice;
                     cout << "Enter maximum price: ";
                     cin >> maxPrice;
-                    cout << "Enter medicine name (optional, press Enter to skip): ";
+                    cout << "Enter medicine name: ";
                     cin.ignore();
                     getline(cin, name);
 
                     vector<Medicine> foundMedicines = medicineList.findMedicineByPrice(minPrice, maxPrice, name);
                     if (!foundMedicines.empty()) {
-                        for (const auto& medicine : foundMedicines) {
+                        cout << "Medicines within price range and name \"" << name << "\":\n";
+                        for (auto medicine : foundMedicines) {
                             cout << medicine << endl;
                         }
                     } else {
@@ -502,6 +571,8 @@ public:
             cout << "2. Display Medicines\n";
             cout << "3. Sort Medicines\n";
             cout << "4. Find Medicines\n";
+            cout << "5. Save to CSV\n";
+            cout << "6. Load from CSV\n";
             cout << "0. Exit\n";
             cout << "Enter choice: ";
             cin >> choice;
@@ -521,6 +592,20 @@ public:
                 case 4:
                     findMedicines();
                     break;
+                case 5: {
+                    string filename;
+                    cout << "Enter filename to save (e.g., medicines.csv): ";
+                    cin >> filename;
+                    medicineList.saveToCSV(filename);
+                    break;
+                }
+                case 6: {
+                    string filename;
+                    cout << "Enter filename to load (e.g., medicines.csv): ";
+                    cin >> filename;
+                    medicineList.loadFromCSV(filename);
+                    break;
+                }
                 default:
                     cout << "Invalid choice, please try again.\n";
             }
