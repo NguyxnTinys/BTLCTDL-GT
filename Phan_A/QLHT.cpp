@@ -115,8 +115,8 @@ public:
     void sortByName();
     void sortByLocation();
 
-    vector<Medicine> findMedicineByPrice(int minPrice, int maxPrice, string name) const;
-    vector<Medicine> findByName(const string name) const;
+    list<Medicine> findMedicineByPrice(int minPrice, int maxPrice, string name) const;
+    list<Medicine> findByName(const string name) const;
     bool findById(const string id) const;
 };
 
@@ -273,8 +273,8 @@ bool MedicineList::findById(const string id) const{
     return false;
 }
 
-vector<Medicine> MedicineList::findByName(const string name) const {
-    vector<Medicine>  res;
+list<Medicine> MedicineList::findByName(const string name) const {
+    list<Medicine>  res;
 
     for (auto medicine : ls) {
         if (medicine.getName() == name) {
@@ -285,8 +285,8 @@ vector<Medicine> MedicineList::findByName(const string name) const {
     return res;
 }
 
-vector<Medicine> MedicineList::findMedicineByPrice(int minPrice, int maxPrice, string name) const {
-    vector<Medicine> res;
+list<Medicine> MedicineList::findMedicineByPrice(int minPrice, int maxPrice, string name) const {
+    list<Medicine> res;
 
     for(auto medicine : ls) {
         if (medicine.getPrice() >= minPrice && medicine.getPrice() <= maxPrice && medicine.getName() == name){
@@ -520,7 +520,7 @@ private:
                     cout << "Enter Name: ";
                     cin.ignore();
                     getline(cin, name);
-                    vector<Medicine> foundMedicines = medicineList.findByName(name);
+                    list<Medicine> foundMedicines = medicineList.findByName(name);
                     if (!foundMedicines.empty()) {
                         cout << "Medicines with name \"" << name << "\":\n";
                         for (auto medicine : foundMedicines) {
@@ -542,7 +542,7 @@ private:
                     cin.ignore();
                     getline(cin, name);
 
-                    vector<Medicine> foundMedicines = medicineList.findMedicineByPrice(minPrice, maxPrice, name);
+                    list<Medicine> foundMedicines = medicineList.findMedicineByPrice(minPrice, maxPrice, name);
                     if (!foundMedicines.empty()) {
                         cout << "Medicines within price range and name \"" << name << "\":\n";
                         for (auto medicine : foundMedicines) {
