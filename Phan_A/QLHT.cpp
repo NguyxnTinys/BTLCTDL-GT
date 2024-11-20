@@ -26,9 +26,9 @@ public:
     string getCategory() const;
     string getLocation() const;
 
-    void setPrice(int  price);
     void setQuantity(int quantity);
-    
+    void setPrice(int price);
+
     bool operator < (const Medicine &other) const;
     friend istream& operator >>  (istream &in, Medicine &m);
     friend ostream& operator<<(ostream& out, const Medicine& m);
@@ -310,7 +310,7 @@ private:
             cout << "1.3 Fix Medicine Price\n";
             cout << "1.4 Fix Medicine Quantity\n";
             cout << "1.5 Fix All\n";
-            cout << "Enter sub-choice (0 to go back to Main Menu): ";
+            cout << "1.0 Back\n";
             cin >> subChoice;
 
             if (subChoice == 0) break;
@@ -319,11 +319,67 @@ private:
                 case 1: {
                     char addMore = 'y';
                     while (addMore == 'y' || addMore == 'Y') {
-                        Medicine m1;
-                        cout << "Enter medicine details:\n";
+                        string m1;
+                        cout << "Enter Medicines ID: ";
                         cin >> m1;
-                        medicineList.add(m1);
-                        cout << "Add another medicine? (y/n): ";
+
+                        if (medicineList.findById(m1)){
+                            char fixChoice;
+                            cout << "Medicine with ID " << m1 << " already exists. Do you want to update it? (y/n): ";
+                            cin >> fixChoice;
+
+                            if (fixChoice == 'y' || fixChoice == 'Y') {
+                                Medicine updatedMedicine;
+                                cout << "Enter new details (without changing ID):\n";
+                                string name, category, location;
+                                int price, quantity;
+
+                                cout << "Enter Name: ";
+                                cin.ignore();
+                                getline(cin, name);
+                                cout << "Enter Quantity: ";
+                                cin >> quantity;
+                                cout << "Enter Price: ";
+                                cin >> price;
+                                cout << "Enter Category: ";
+                                cin.ignore();
+                                getline(cin, category);
+                                cout << "Enter Location (khoA, khoB, khoC, khoD): ";
+                                getline(cin, location);
+                                
+                                updatedMedicine = Medicine(m1, name, quantity, price, category, location);
+
+                                // Cập nhật thông tin thuốc ngoại trừ ID
+                                medicineList.fixAll(m1, updatedMedicine);
+                            } else {
+                                cout << "Medicine not updated.\n";
+                                break;
+                            }   
+                        }else {
+                            Medicine newMedicine;
+                            string name, category, location;
+                            int price, quantity;
+
+                            cout << "Enter Name: ";
+                            cin.ignore();
+                            getline(cin, name);
+                            cout << "Enter Quantity: ";
+                            cin >> quantity;
+                            cout << "Enter Price: ";
+                            cin >> price;
+                            cout << "Enter Category: ";
+                            cin.ignore();
+                            getline(cin, category);
+                            cout << "Enter Location (khoA, khoB, khoC, khoD): ";
+                            getline(cin, location);
+                            
+                            newMedicine = Medicine(m1, name, quantity, price, category, location);
+
+                            // Thêm thuốc mới vào danh sách
+                            medicineList.add(newMedicine);   
+                        }
+
+                        cout << "Do you want to add or update another medicine? (y/n): ";
                         cin >> addMore;
                     }
                     break;
@@ -395,17 +451,40 @@ private:
                         string m5;
                         cout << "Enter ID: ";
                         cin >> m5;
-                        if (medicineList.findById(m5)){
+                        
+                        if (medicineList.findById(m5)) {
                             Medicine updatedMedicine;
-                            cout << "Enter new details:\n";
-                            cin >> updatedMedicine;
+                            cout << "Enter new details (without changing ID):\n";
+                            string name, category, location;
+                            int price, quantity;
+
+                            cout << "Enter Name: ";
+                            cin.ignore();
+                            getline(cin, name);
+                            cout << "Enter Quantity: ";
+                            cin >> quantity;
+                            cout << "Enter Price: ";
+                            cin >> price;
+                            cout << "Enter Category: ";
+                            cin.ignore();
+                            getline(cin, category);
+                            cout << "Enter Location (khoA, khoB, khoC, khoD): ";
+                            getline(cin, location);
+                            
+                            updatedMedicine = Medicine(m5, name, quantity, price, category, location);
+                            // updatedMedicine.setName(name);
+                            // updatedMedicine.setQuantity(quantity);
+                            // updatedMedicine.setPrice(price);
+                            // updatedMedicine.setCategory(category);
+                            // updatedMedicine.setLocation(location);
+
+                            // Cập nhật thông tin thuốc ngoại trừ ID
                             medicineList.fixAll(m5, updatedMedicine);
-        
+                        
                             cout << "Update another medicine? (y/n): ";
                             cin >> updateMore;
-                        }else {
-                            cout << "Errol: Medicine ID not found.\n";
-
+                        } else {
+                            cout << "Error: Medicine ID not found.\n";
                         }
                     }
                     break;
@@ -423,7 +502,7 @@ private:
             cout << "2.1 Display Medicines by Location\n";
             cout << "2.2 Display Medicines by Category\n";
             cout << "2.3 Display All Medicines\n";
-            cout << "Enter sub-choice (0 to go back to Main Menu): ";
+            cout << "2.0 Back\n";
             cin >> subChoice;
 
             if (subChoice == 0) break;
@@ -470,7 +549,7 @@ private:
             cout << "3.1 Sort Medicines by ID\n";
             cout << "3.2 Sort Medicines by Name\n";
             cout << "3.3 Sort Medicines by Location\n";
-            cout << "Enter sub-choice (0 to go back to Main Menu): ";
+            cout << "3.0 Back\n";
             cin >> subChoice;
 
             if (subChoice == 0) break;
@@ -498,7 +577,7 @@ private:
             cout << "4.1 Find Medicine by ID\n";
             cout << "4.2 Find Medicine by Name\n";
             cout << "4.3 Find Medicines within Price Range\n";
-            cout << "Enter sub-choice (0 to go back to Main Menu): ";
+            cout << "4.0 Back\n";
             cin >> subChoice;
 
             if (subChoice == 0) break;
@@ -559,6 +638,38 @@ private:
         }
     }
 
+    void saveAndLoadData() {
+        int subChoice;
+        while (true) {
+            cout << "\n--- Save and Load Data ---\n";
+            cout << "5.1 Save Data to CSV\n";
+            cout << "5.2 Load Data from CSV\n";
+            cout << "5.0 Back\n";
+            cin >> subChoice;
+
+            if (subChoice == 0) break;
+
+            switch (subChoice) {
+                case 1: {
+                    string filename;
+                    cout << "Enter filename to save data: ";
+                    cin >> filename;
+                    medicineList.saveToCSV(filename);
+                    break;
+                }
+                case 2: {
+                    string filename;
+                    cout << "Enter filename to load data: ";
+                    cin >> filename;
+                    medicineList.loadFromCSV(filename);
+                    break;
+                }
+                default:
+                    cout << "Invalid choice.\n";
+            }
+        }
+    }
+
 
 public:
     Menu(MedicineList& ml) : medicineList(ml) {}
@@ -571,8 +682,7 @@ public:
             cout << "2. Display Medicines\n";
             cout << "3. Sort Medicines\n";
             cout << "4. Find Medicines\n";
-            cout << "5. Save to CSV\n";
-            cout << "6. Load from CSV\n";
+            cout << "5. Save and Load Data\n";
             cout << "0. Exit\n";
             cout << "Enter choice: ";
             cin >> choice;
@@ -593,17 +703,7 @@ public:
                     findMedicines();
                     break;
                 case 5: {
-                    string filename;
-                    cout << "Enter filename to save (e.g., medicines.csv): ";
-                    cin >> filename;
-                    medicineList.saveToCSV(filename);
-                    break;
-                }
-                case 6: {
-                    string filename;
-                    cout << "Enter filename to load (e.g., medicines.csv): ";
-                    cin >> filename;
-                    medicineList.loadFromCSV(filename);
+                    saveAndLoadData();
                     break;
                 }
                 default:
