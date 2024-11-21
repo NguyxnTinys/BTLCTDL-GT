@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-
+#include "vector.cpp"
 using namespace std;
 
 class SpellChecker {
@@ -7,17 +7,17 @@ private:
     vector<string> dictionary;
     string filename;
 
-    string removePunctuation(const string& word) {
+    string removePunctuation(string word) {
         string cleanWord;
         for (char c : word) {
-            if (isalpha(c)) { // Chỉ giữ lại các ký tự chữ cái
+            if (isalpha(c)) {
                 cleanWord += c;
             }
         }
         return cleanWord;
     }
 
-    bool binarySearch(const vector<string>& dictionary, const string& word) {
+    bool binarySearch(vector<string>& dictionary, string word) {
         int left = 0;
         int right = dictionary.size() - 1;
 
@@ -37,9 +37,9 @@ private:
 
         return false;
     }
+
 public:
-    // Load dictionary from file and sort it
-    void loadDictionary(const string& file) {
+    void loadDictionary(string file) {
         filename = file;
         dictionary.clear();
 
@@ -59,8 +59,7 @@ public:
         cout << "Dictionary loaded and sorted successfully.\n";
     }
 
-    // Convert string to lowercase
-    string toLower(const string& str) {
+    string toLower(string str) {
         string result;
         for (char c : str) {
             result += tolower(c);
@@ -68,19 +67,24 @@ public:
         return result;
     }
 
-    bool binarySearch(const string& word) {
+    bool binarySearch(string word) {
         return binarySearch(dictionary, word);
     }
 
-    // Check spelling of input text
     void checkSpelling() {
-        string text;
-        cout << "Enter text to check for spelling errors: ";
+        string text, line;
+        vector<string> misspelled;
+        cout << "Enter text to check for spelling errors: \n";
         cin.ignore();
-        getline(cin, text);
+        while (true) {
+            getline(cin, line);
+            if (line.empty()) {
+                break;
+            }
+            text += line + " ";
+        }
 
         string word;
-        vector<string> misspelled;
         stringstream ss(text);
 
         while (ss >> word) {
@@ -95,57 +99,43 @@ public:
             cout << "No spelling errors found.\n";
         } else {
             cout << "Misspelled words:\n";
-            for (const string& w : misspelled) {
+            for (string w : misspelled) {
                 cout << w << endl;
             }
         }
     }
 
-    // Add a word to the dictionary
-    void addWord(const string& word) {
+    void addWord(string word) {
         string lowerWord = toLower(word);
-        if (binarySearch(lowerWord)) {
+
+        auto it = lower_bound(dictionary.begin(), dictionary.end(), lowerWord);
+
+        if (it != dictionary.end() && *it == lowerWord) {
             cout << "Word already exists in the dictionary.\n";
             return;
         }
-        dictionary.push_back(lowerWord);
-        sort(dictionary.begin(), dictionary.end());
-        saveDictionary();
+
+        dictionary.insert(it, lowerWord);
         cout << "Word added successfully.\n";
     }
 
-    // Search for a word in the dictionary
-    bool searchWord(const string& word) {
-        return binarySearch(word);
-    }
+    void deleteWord(string word) {
+        string lowerWord = toLower(word);
 
-    // Delete a word from the dictionary
-    void deleteWord(const string& word) {
-        auto it = lower_bound(dictionary.begin(), dictionary.end(), word);
-        if (it != dictionary.end() && *it == word) {
+        auto it = lower_bound(dictionary.begin(), dictionary.end(), lowerWord);
+        if (it != dictionary.end() && *it == lowerWord) {
             dictionary.erase(it);
-            saveDictionary();
             cout << "Word deleted successfully.\n";
         } else {
             cout << "Word not found in the dictionary.\n";
         }
     }
 
-    // Modify a word in the dictionary
-    void modifyWord(const string& oldWord, const string& newWord) {
-        auto it = lower_bound(dictionary.begin(), dictionary.end(), oldWord);
-        if (it != dictionary.end() && *it == oldWord) {
-            *it = toLower(newWord);
-            sort(dictionary.begin(), dictionary.end());
-            saveDictionary();
-            cout << "Word modified successfully.\n";
-        } else {
-            cout << "Word not found in the dictionary.\n";
-        }
-    }
-
-    // Save dictionary to file
     void saveDictionary() {
+        cout << "Enter the filename to save the dictionary: ";
+        cin.ignore();
+        getline(cin, filename);
+
         ofstream outFile(filename);
         if (!outFile.is_open()) {
             cout << "Error: Unable to open file for writing.\n";
@@ -156,6 +146,7 @@ public:
             outFile << word << endl;
         }
 
+        cout << "Dictionary (" << filename << ") saved successfully.\n";
         outFile.close();
     }
 };
@@ -168,37 +159,32 @@ public:
     void displayMainMenu() {
         string filename;
         cout << "Enter dictionary file to load (press Enter for default: dictionary.txt): ";
-        cin.ignore(); // Xóa bất kỳ ký tự thừa nào còn lại trong bộ đệm
-        getline(cin, filename); // Đọc toàn bộ dòng nhập từ người dùng
+        getline(cin, filename);
 
-        if (filename.empty()) { // Kiểm tra nếu người dùng không nhập gì
-            filename = "dictionary.txt"; // Gán tên file mặc định
+        if (filename.empty()) {
+            filename = "dictionary.txt";
         }
 
         checker.loadDictionary(filename);
 
-
         while (true) {
             cout << "\nMenu:\n";
-            cout << "1. Check spelling\n";
-            cout << "2. Fix dictionary\n";
-            cout << "3. Load program\n";
+            cout << "1. Check Spelling\n";
+            cout << "2. Fix Dictionary\n";
+            cout << "3. Load/Save Dictionary\n";
             cout << "0. Exit\n";
             cout << "Enter your choice: ";
             int choice;
             cin >> choice;
 
             if (choice == 0) {
-                checker.loadDictionary(filename);
                 break;
             } else if (choice == 1) {
                 checker.checkSpelling();
             } else if (choice == 2) {
                 displayFixMenu();
             } else if (choice == 3) {
-                cout << "Enter dictionary file to reload: ";
-                cin >> filename;
-                checker.loadDictionary(filename);
+                displayLoadSaveMenu();
             } else {
                 cout << "Invalid choice. Try again.\n";
             }
@@ -206,54 +192,54 @@ public:
     }
 
     void displayFixMenu() {
-        cout << "Enter word to search: ";
-        string word;
-        cin >> word;
+        while (true) {
+            cout << "\nFix Menu:\n";
+            cout << "1. Add Word\n";
+            cout << "2. Delete Word\n";
+            cout << "0. Back to main menu\n";
+            cout << "Enter your choice: ";
+            int subChoice;
+            cin >> subChoice;
 
-        word = checker.toLower(word);
-
-        if (checker.binarySearch(word)) {
-            cout << "\nWord found in the dictionary.\n";
-            while (true) {
-                cout << "\nFix Menu:\n";
-                cout << "1. Add word\n";
-                cout << "3. Delete word\n";
-                cout << "0. Back to main menu\n";
-                cout << "Enter your choice: ";
-                int subChoice;
-                cin >> subChoice;
-
-                if (subChoice == 0) {
-                    break; // Quay lại menu chính
-                } else if (subChoice == 1) {
-                    cout << "Enter word to add: ";
-                    string newWord;
-                    cin >> newWord;
-                    checker.addWord(newWord);
-                } else if (subChoice == 3) {
-                    checker.deleteWord(word); // Xóa từ
-                    break; // Quay lại menu sau khi xóa
-                } else {
-                    cout << "Invalid choice. Try again.\n";
-                }
+            if (subChoice == 0) {
+                break;
+            } else if (subChoice == 1) {
+                string newWord;
+                cout << "Enter word to add: ";
+                cin >> newWord;
+                checker.addWord(newWord);
+            } else if (subChoice == 2) {
+                string word;
+                cout << "Enter word to delete: ";
+                cin >> word;
+                checker.deleteWord(checker.toLower(word));
+            } else {
+                cout << "Invalid choice. Try again.\n";
             }
-        } else {
-            cout << "The word '" << word << "' does not exist in the dictionary.\n";
-            while (true) {
-                cout << "\nFix Menu:\n";
-                cout << "1. Add word\n";
-                cout << "0. Back to main menu\n";
-                cout << "Enter your choice: ";
-                int subChoice;
-                cin >> subChoice;
+        }
+    }
 
-                if (subChoice == 0) {
-                    break; // Quay lại menu chính
-                } else if (subChoice == 1) {
-                    checker.addWord(word); // Thêm từ vào từ điển
-                } else {
-                    cout << "Invalid choice. Try again.\n";
-                }
+    void displayLoadSaveMenu() {
+        while (true) {
+            cout << "\nLoad/Save Menu:\n";
+            cout << "1. Load Dictionary\n";
+            cout << "2. Save Dictionary\n";
+            cout << "0. Back to main menu\n";
+            cout << "Enter your choice: ";
+            int subChoice;
+            cin >> subChoice;
+
+            if (subChoice == 0) {
+                break;
+            } else if (subChoice == 1) {
+                string file;
+                cout << "Enter file name to load: ";
+                cin >> file;
+                checker.loadDictionary(file);
+            } else if (subChoice == 2) {
+                checker.saveDictionary();
+            } else {
+                cout << "Invalid choice. Try again.\n";
             }
         }
     }
